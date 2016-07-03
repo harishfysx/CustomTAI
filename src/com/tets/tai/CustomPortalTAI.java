@@ -1,6 +1,7 @@
 package com.tets.tai;
 
 
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Properties;
 import javax.servlet.http.HttpServletRequest;
@@ -46,7 +47,10 @@ public class CustomPortalTAI implements TrustAssociationInterceptor
  *
  **/
  public int initialize(Properties props) throws WebTrustAssociationFailedException
+
  {
+	 String propVal = props.getProperty("my.custom.property");
+	 System.out.println("Priting custom property from websphere"+propVal);
   return 0;
  }
 
@@ -63,8 +67,14 @@ public class CustomPortalTAI implements TrustAssociationInterceptor
  {
        System.out.println("*********** Custom TAI ******************");
   System.out.println("Determining if this TAI should handle the incoming request...");
-
-  if (req.getHeader("SM_USER") != null)
+  Enumeration e = req.getHeaderNames();
+  while (e.hasMoreElements()) {
+      String name = (String)e.nextElement();
+      String value = req.getHeader(name);
+      System.out.println(name + " = " + value);
+  }
+  String userId=req.getHeader("SM_USER");
+  if (userId!=null && !userId.trim().isEmpty())
   {
     System.out.println("Custom TAI is being used to establish trust for user"+req.getHeader("SM_USER"));
   
@@ -87,11 +97,12 @@ public class CustomPortalTAI implements TrustAssociationInterceptor
  public TAIResult negotiateValidateandEstablishTrust(HttpServletRequest req, HttpServletResponse resp)
  throws WebTrustAssociationFailedException
  {
-  String userId = req.getHeader("SM_USER");
-  if (userId.equals("uccuid1"))
+  String smrealm= req.getHeader("SM_REALM");
+  String userId= req.getHeader("SM_USER");
+  if (userId!=null)
   {
     System.out.println("*********** CustomTAI *****************");
-    System.out.println("UserID = " + userId);
+    System.out.println("smrealm= " + smrealm);
 
     return TAIResult.create(HttpServletResponse.SC_OK, userId);
   }
